@@ -1,0 +1,12 @@
+{
+  "name": "all-clear",
+  "description": "Play a sound when Claude Code is fully idle — suppressed while background tasks in the same session are still running.",
+  "version": "0.1.0",
+  "author": {
+    "name": "nez"
+  },
+  "homepage": "https://github.com/nez/all-clear",
+  "repository": "https://github.com/nez/all-clear",
+  "license": "MIT",
+  "keywords": ["hook", "stop", "sound", "notification", "background-tasks"]
+}

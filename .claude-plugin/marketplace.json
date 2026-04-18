@@ -1,0 +1,20 @@
+{
+  "name": "all-clear",
+  "owner": {
+    "name": "nez"
+  },
+  "metadata": {
+    "description": "Claude Code plugin that plays a sound only when the session is fully idle — no active background tasks."
+  },
+  "plugins": [
+    {
+      "name": "all-clear",
+      "source": "./plugins/all-clear",
+      "description": "Play a sound on the final Stop of a turn — silent while background bash tasks are still running.",
+      "homepage": "https://github.com/nez/all-clear",
+      "repository": "https://github.com/nez/all-clear",
+      "license": "MIT",
+      "keywords": ["hook", "stop", "sound", "notification", "background-tasks"]
+    }
+  ]
+}
