@@ -16,8 +16,8 @@
 #   session's tasks/ dir is a live background task.
 #
 # Configuration (env vars):
-#   ALL_CLEAR_SOUND   Path to a sound file. If unset or missing, plugin is
-#                     silent. No default — users must opt in by setting this.
+#   ALL_CLEAR_SOUND   Path to a sound file. Defaults to the plugin's bundled
+#                     sounds/default.mp3.
 #   ALL_CLEAR_PLAYER  Command to play the sound file. Defaults: paplay (Linux),
 #                     afplay (macOS), aplay (Linux fallback).
 
@@ -30,7 +30,9 @@ session_id=$(printf '%s' "$input" | /usr/bin/tr -d '\n' \
 
 play() {
   local sound=${ALL_CLEAR_SOUND:-}
-  [ -z "$sound" ] && return 0
+  if [ -z "$sound" ]; then
+    sound="${CLAUDE_PLUGIN_ROOT:-}/sounds/default.mp3"
+  fi
   [ -f "$sound" ] || return 0
 
   local player=${ALL_CLEAR_PLAYER:-}

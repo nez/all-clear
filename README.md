@@ -25,7 +25,7 @@ No heuristics, no debouncing. The signal is the presence of a live writer.
 /plugin install all-clear@all-clear
 ```
 
-Then set the sound file (and optionally the player) in your environment:
+Out of the box the plugin plays a bundled default sound (`plugins/all-clear/sounds/default.mp3`). To use your own:
 
 ```sh
 export ALL_CLEAR_SOUND=$HOME/path/to/your-sound.mp3
@@ -33,13 +33,11 @@ export ALL_CLEAR_SOUND=$HOME/path/to/your-sound.mp3
 # export ALL_CLEAR_PLAYER=paplay
 ```
 
-If `ALL_CLEAR_SOUND` is unset or missing, the plugin is silent — i.e. a no-op until you opt in.
-
 ## Configuration
 
 | Env var | Default | Description |
 | :--- | :--- | :--- |
-| `ALL_CLEAR_SOUND` | (unset) | Path to the sound file. Plugin is silent until set. |
+| `ALL_CLEAR_SOUND` | bundled `sounds/default.mp3` | Path to the sound file. |
 | `ALL_CLEAR_PLAYER` | auto-detect | Command to play the file. Auto-detects `paplay`, `afplay`, `aplay`. |
 
 ## Requirements
