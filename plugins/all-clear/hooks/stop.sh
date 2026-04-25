@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
 # all-clear — play a sound only when the Claude Code session is fully idle.
 #
-# When Claude Code launches a background task (Bash with run_in_background:true),
-# the turn ends while the task is still running and the Stop hook fires. When
-# the task finishes, Claude wakes up, responds, and Stop fires again. Without
-# gating, a notification sound plays for each of those Stops. This hook plays
-# the sound only on the *final* Stop — the one where no background tasks in
-# this session are still active.
+# A Stop hook fires every time Claude returns control after a turn. Two kinds
+# of work can leave a session "busy" past one of those Stops, and we suppress
+# the sound while either is still active:
 #
-# Per-session attribution (Linux):
-#   Claude Code redirects background Bash task stdout/stderr to
-#     /tmp/claude-<uid>/<cwd-encoded>/<session_id>/tasks/<task-id>.output
-#   Hook stdout captures live in the same dir as `hook_<pid>.output`.
-#   Any process with fd/1 or fd/2 pointing at a non-hook_ output file in this
-#   session's tasks/ dir is a live background task.
+#   1. Pending TaskCreate items — ~/.claude/tasks/<session_id>/<n>.json with
+#      status "pending" or "in_progress". When the parent dispatches work as
+#      tracked tasks (e.g. background Agent subagents), it updates each task
+#      as that subagent returns and stops in between, so Stop fires once per
+#      completion. The user wants the sound only on the final completion.
+#
+#   2. Background Bash tasks (run_in_background:true) — regular .output files
+#      under /tmp/claude-<uid>/<cwd>/<session_id>/tasks/ with the spawned
+#      shell's fd 1 or 2 still pointing at them. Hook stdout captures live in
+#      the same dir as hook_<pid>.output, which we ignore.
 #
 # Configuration (env vars):
-#   ALL_CLEAR_SOUND   Path to a sound file. Defaults to the plugin's bundled
+#   ALL_CLEAR_SOUND   Path to a sound file. Defaults to plugin's bundled
 #                     sounds/default.mp3.
-#   ALL_CLEAR_PLAYER  Command to play the sound file. Defaults: paplay (Linux),
-#                     afplay (macOS), aplay (Linux fallback).
+#   ALL_CLEAR_PLAYER  Command to play the sound file. Defaults: paplay
+#                     (Linux), afplay (macOS), aplay (Linux fallback).
 
 set -u
 
@@ -55,8 +56,18 @@ if ! [[ "$session_id" =~ ^[0-9a-fA-F-]{36}$ ]]; then
   exit 0
 fi
 
-marker="/${session_id}/tasks/"
+# (1) Any TaskCreate item still pending or in-progress?
+tasks_dir="${HOME:-/}/.claude/tasks/${session_id}"
+if [ -d "$tasks_dir" ]; then
+  if /usr/bin/grep -lE \
+       '"status"[[:space:]]*:[[:space:]]*"(pending|in_progress)"' \
+       "$tasks_dir"/*.json >/dev/null 2>&1; then
+    exit 0
+  fi
+fi
 
+# (2) Any background Bash task still running?
+marker="/${session_id}/tasks/"
 if [ -d /proc ]; then
   for proc in /proc/[0-9]*; do
     pid=${proc##*/}
